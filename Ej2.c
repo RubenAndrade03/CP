@@ -1,0 +1,80 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <unistd.h>
+#include <time.h>
+
+#define N_THREADS_A 4
+#define N_THREADS_B 3
+#define ITERS 10000
+#define ESPERA 1000
+
+typedef struct {
+    volatile int *a;
+    volatile int *b;
+    int iters;
+    int espera;
+    int liberar;
+} args;
+
+void *threads_fun(void *arg) {
+
+    args *p = (args *)arg;
+    int i;
+
+    for (i = 0; i < p->iters; i++) {
+        (*p->a)++;
+        (*p->b)--;
+        usleep(p->espera / 1000);
+    };
+
+    if (p->liberar) free(p);
+    return NULL;
+}
+
+int main() {
+
+    pthread_t threadsA[N_THREADS_A];
+    pthread_t threadsB[N_THREADS_B];
+    volatile int a = 0;
+    volatile int b = 0;
+    int i;
+
+    for (i = 0; i < N_THREADS_A; i++) {
+        
+        args *p = malloc(sizeof(args));
+        p->a = &a;
+        p->b = &b;
+        p->iters = ITERS;
+        p->espera = ESPERA;
+        p->liberar = 1;
+
+        pthread_create(&threadsA[i], NULL, threads_fun, p);
+    }
+    
+    args argsB[N_THREADS_B];
+
+    for (i = 0; i < N_THREADS_B; i++) {
+        
+        argsB[i].a = &a;
+        argsB[i].b = &b;
+        argsB[i].iters = ITERS;
+        argsB[i].espera = ESPERA;
+        argsB[i].liberar = 0;
+
+        pthread_create(&threadsB[i], NULL, threads_fun, &argsB[i]);
+    }
+
+    for (i = 0; i < N_THREADS_A; i++) {
+        pthread_join(threadsA[i], NULL);
+    }
+
+    for (i = 0; i < N_THREADS_B; i++) {
+        pthread_join(threadsB[i], NULL);
+    }
+
+    printf("Valor final de a: %d\n", a);
+    printf("Valor final de b: %d\n", b);
+
+    return 0;
+}
