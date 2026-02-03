@@ -9,7 +9,8 @@
 #define ITERS 10000
 #define ESPERA 1000
 
-typedef struct {
+typedef struct
+{
     volatile int *a;
     volatile int *b;
     int iters;
@@ -17,22 +18,24 @@ typedef struct {
     int liberar;
 } args;
 
-void *threads_fun(void *arg) {
+void *threads_fun(void *arg)
+{
 
     args *p = (args *)arg;
     int i;
 
-    for (i = 0; i < p->iters; i++) {
+    for (i = 0; i < p->iters; i++)
+    {
         (*p->a)++;
         (*p->b)--;
         usleep(p->espera / 1000);
     };
 
-    if (p->liberar) free(p);
     return NULL;
 }
 
-int main() {
+int main()
+{
 
     pthread_t threadsA[N_THREADS_A];
     pthread_t threadsB[N_THREADS_B];
@@ -40,22 +43,25 @@ int main() {
     volatile int b = 0;
     int i;
 
-    for (i = 0; i < N_THREADS_A; i++) {
-        
+    args *argsA[N_THREADS_A];
+    for (i = 0; i < N_THREADS_A; i++)
+    {
+
         args *p = malloc(sizeof(args));
         p->a = &a;
         p->b = &b;
         p->iters = ITERS;
         p->espera = ESPERA;
         p->liberar = 1;
+        argsA[i] = p;
 
         pthread_create(&threadsA[i], NULL, threads_fun, p);
     }
-    
-    args argsB[N_THREADS_B];
 
-    for (i = 0; i < N_THREADS_B; i++) {
-        
+    args argsB[N_THREADS_B];
+    for (i = 0; i < N_THREADS_B; i++)
+    {
+
         argsB[i].a = &a;
         argsB[i].b = &b;
         argsB[i].iters = ITERS;
@@ -65,12 +71,19 @@ int main() {
         pthread_create(&threadsB[i], NULL, threads_fun, &argsB[i]);
     }
 
-    for (i = 0; i < N_THREADS_A; i++) {
+    for (i = 0; i < N_THREADS_A; i++)
+    {
         pthread_join(threadsA[i], NULL);
     }
 
-    for (i = 0; i < N_THREADS_B; i++) {
+    for (i = 0; i < N_THREADS_B; i++)
+    {
         pthread_join(threadsB[i], NULL);
+    }
+
+    for (i = 0; i < N_THREADS_A; i++)
+    {
+        free(argsA[i]);
     }
 
     printf("Valor final de a: %d\n", a);
