@@ -2,12 +2,16 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <stdbool.h>
 #include <time.h>
 
 #define N_THREADS_A 4
 #define N_THREADS_B 3
 #define ITERS 10000
-#define ESPERA 1000
+#define ESPERA 10000
+#define ESPERA_MONITOR 100000
+
+volatile bool fin = false;
 
 typedef struct {
     volatile int *a;
@@ -37,12 +41,12 @@ void *thread_monitorizacion(void *arg) {
     args *p = (args *)arg;
     int i;
 
-    for (i = 0; i < p->iters; i++) {
+    while (!fin) {
         printf("a = %d\n", *p->a);
         printf("b = %d\n", *p->b);
         printf("Suma = %d\n", *p->a + *p->b);
-        usleep(p->espera / 1000);
-    };
+        usleep(ESPERA_MONITOR);
+    }
 
     free(p);
     return NULL;
@@ -57,14 +61,14 @@ int main() {
     volatile int b = 0;
     int i;
 
-    args *p = malloc(sizeof(args));
-    p->a = &a;
-    p->b = &b;
-    p->iters = ITERS;
-    p->espera = ESPERA;
-    p->liberar = 1;
+    args *pM = malloc(sizeof(args));
+    pM->a = &a;
+    pM->b = &b;
+    pM->iters = ITERS;
+    pM->espera = ESPERA;
+    pM->liberar = 1;
 
-    pthread_create(&threadM, NULL, thread_monitorizacion, p);
+    pthread_create(&threadM, NULL, thread_monitorizacion, pM);
 
     for (i = 0; i < N_THREADS_A; i++) {
         
@@ -79,7 +83,6 @@ int main() {
     }
     
     args argsB[N_THREADS_B];
-
     for (i = 0; i < N_THREADS_B; i++) {
         
         argsB[i].a = &a;
@@ -99,6 +102,7 @@ int main() {
         pthread_join(threadsB[i], NULL);
     }
 
+    fin = true;
     pthread_join(threadM, NULL);
 
     printf("Valor final de a: %d\n", a);
