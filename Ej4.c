@@ -1,3 +1,7 @@
+//INTEGRANTES DEL GRUPO
+//Rubén Andrade Abeijón - ruben.andrade@udc.es
+//Manuel Taibo González - manuel.taibo2@udc.es
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>

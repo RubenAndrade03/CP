@@ -1,3 +1,7 @@
+//INTEGRANTES DEL GRUPO
+//Rubén Andrade Abeijón - ruben.andrade@udc.es
+//Manuel Taibo González - manuel.taibo2@udc.es
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -30,11 +34,13 @@ void *threads_fun(void *arg) {
 
     for (i = 0; i < p->iters; i++) {
         pthread_mutex_lock(p->m_a);
-        pthread_mutex_lock(p->m_b);
         (*p->a)++;
-        (*p->b)--;
         pthread_mutex_unlock(p->m_a);
+
+        pthread_mutex_lock(p->m_b);
+        (*p->b)--;
         pthread_mutex_unlock(p->m_b);
+        
         usleep(p->espera / 1000);
     };
 

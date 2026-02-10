@@ -1,3 +1,7 @@
+//INTEGRANTES DEL GRUPO
+//Rubén Andrade Abeijón - ruben.andrade@udc.es
+//Manuel Taibo González - manuel.taibo2@udc.es
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -15,7 +19,6 @@ typedef struct
     volatile int *b;
     int iters;
     int espera;
-    int liberar;
 } args;
 
 void *threads_fun(void *arg)
@@ -52,7 +55,6 @@ int main()
         p->b = &b;
         p->iters = ITERS;
         p->espera = ESPERA;
-        p->liberar = 1;
         argsA[i] = p;
 
         pthread_create(&threadsA[i], NULL, threads_fun, p);
@@ -66,7 +68,6 @@ int main()
         argsB[i].b = &b;
         argsB[i].iters = ITERS;
         argsB[i].espera = ESPERA;
-        argsB[i].liberar = 0;
 
         pthread_create(&threadsB[i], NULL, threads_fun, &argsB[i]);
     }
